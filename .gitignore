@@ -1,2 +1,2 @@
-test.bin
-test.elf
+*.bin
+*.elf
