@@ -40,8 +40,6 @@ _start:
   # enable S-mode interrupts
   csrsi sstatus, 1 << 1
 
-.align 4
-_loop:
   # set timer: current time + large number, a second or so from now on
   rdtime t0
   li t1, 8000000
@@ -50,10 +48,11 @@ _loop:
   li  a7, 0x54494D45
   ecall
   
+.align 4
+_loop:
   # enable S-mode timer
   li t1, 1 << 5
   csrs sie, t1
-  wfi
 
   li  a0, 'L'
   li  a7, 0x01
@@ -74,6 +73,14 @@ _loop:
   li  a7, 0x01
   ecall
 
+  # busy loop
+  li  t4, 0x8000000
+_inner:
+  addi t4, t4, -1
+  bne t4, zero, _inner
+
+  # We may as well wait for an interrupt.
+  # wfi
   j   _loop
 
 .align 4
@@ -103,6 +110,14 @@ trap_handler:
   csrc sip, t0
   # disable timer from now on, we reenable it in the loop
   csrc sie, t0
+
+  # set timer: current time + large number, a second or so from now on
+  rdtime t0
+  li t1, 8000000
+  add a0, t0, t1
+  li  a6, 0
+  li  a7, 0x54494D45
+  ecall
 
   li  a0, 'I'
   li  a7, 0x01
