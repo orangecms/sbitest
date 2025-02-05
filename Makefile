@@ -16,14 +16,17 @@ QEMU_BIN := sbitest_qemu.bin
 K230_ELF := sbitest_k230.elf
 K230_BIN := sbitest_k230.bin
 
-all: elf k230-bin
+all: elf bin k230-bin
 
 clean:
-	rm -f *.bin *.elf
+	rm -f *.bin *.elf *.o
 
 elf:
 	$(CROSS_COMPILE)as -march=$(ARCH) -mabi=$(ABI) -o $(INTERMEDIATE) sbitest.S
 	$(CROSS_COMPILE)ld -T link.ld -o $(QEMU_ELF) $(INTERMEDIATE)
+
+bin: elf
+	$(CROSS_COMPILE)objcopy -O binary $(QEMU_ELF) $(QEMU_BIN)
 
 run: elf
 	$(QEMU_PREFIX)qemu-system-riscv64 $(QEMU_OPTION) \
